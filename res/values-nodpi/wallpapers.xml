@@ -17,5 +17,8 @@
 
 <resources>
     <string-array name="wallpapers" translatable="false">
+        <item>vertex_1</item>
+        <item>vertex_2</item>
+        <item>vertex_3</item>
     </string-array>
 </resources>
