@@ -118,7 +118,7 @@ public class WallpaperCropActivity extends Activity implements Handler.Callback 
                         actionBar.hide();
                         // Never fade on finish because we return to the app that started us (e.g.
                         // Photos), not the home screen.
-                        cropImageAndSetWallpaper(imageUri, null, false /* shouldFadeOutOnFinish */);
+                        cropImageAndSetWallpaper(imageUri, null, false /* shouldFadeOutOnFinish */, false);
                     }
                 });
         mSetWallpaperButton = findViewById(R.id.set_wallpaper_button);
@@ -276,7 +276,7 @@ public class WallpaperCropActivity extends Activity implements Handler.Callback 
             if (req.scaleAndOffsetProvider != null) {
                 TileSource src = req.result;
                 Point wallpaperSize = WallpaperUtils.getDefaultWallpaperSize(
-                        getResources(), getWindowManager());
+                        getResources(), getWindowManager(), true);
                 RectF crop = Utils.getMaxCropRect(src.getImageWidth(), src.getImageHeight(),
                         wallpaperSize.x, wallpaperSize.y, false /* leftAligned */);
                 mCropView.setScale(req.scaleAndOffsetProvider.getScale(wallpaperSize, crop));
@@ -330,29 +330,43 @@ public class WallpaperCropActivity extends Activity implements Handler.Callback 
         return true;
     }
 
-    public void cropImageAndSetWallpaper(Resources res, int resId, boolean shouldFadeOutOnFinish) {
+    public void cropImageAndSetWallpaper(Resources res, int resId, boolean shouldFadeOutOnFinish, boolean isPortrait) {
         // crop this image and scale it down to the default wallpaper size for
         // this device
         InputStreamProvider streamProvider = InputStreamProvider.fromResource(res, resId);
         Point inSize = mCropView.getSourceDimensions();
-        Point outSize = WallpaperUtils.getDefaultWallpaperSize(getResources(),
-                getWindowManager());
-        RectF crop = Utils.getMaxCropRect(
+        Point outSize = null;
+        RectF crop = null;
+        if(!isPortrait) {
+            outSize = WallpaperUtils.getDefaultWallpaperSize(getResources(),
+                getWindowManager(), true);
+            crop = Utils.getMaxCropRect(
                 inSize.x, inSize.y, outSize.x, outSize.y, false);
+        } else {
+            crop = Utils.getMaxCropRect(
+                inSize.x, inSize.y, inSize.x, inSize.y, false);
+        }
         // Passing 0, 0 will cause launcher to revert to using the
         // default wallpaper size
         CropAndFinishHandler onEndCrop = new CropAndFinishHandler(new Point(0, 0),
                 shouldFadeOutOnFinish);
-        CropAndSetWallpaperTask cropTask = new CropAndSetWallpaperTask(
+        CropAndSetWallpaperTask cropTask = null;
+        if(isPortrait) {
+            cropTask = new CropAndSetWallpaperTask(
+                streamProvider, this, crop, streamProvider.getRotationFromExif(this),
+                inSize.x, inSize.y, onEndCrop);
+        } else {
+            cropTask = new CropAndSetWallpaperTask(
                 streamProvider, this, crop, streamProvider.getRotationFromExif(this),
                 outSize.x, outSize.y, onEndCrop);
+        }
         DialogUtils.executeCropTaskAfterPrompt(this, cropTask, getOnDialogCancelListener());
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     public void cropImageAndSetWallpaper(Uri uri,
             CropAndSetWallpaperTask.OnBitmapCroppedHandler onBitmapCroppedHandler,
-            boolean shouldFadeOutOnFinish) {
+            boolean shouldFadeOutOnFinish, boolean Portrait /*dummy variable*/) {
         // Get the crop
         boolean ltr = mCropView.getLayoutDirection() == View.LAYOUT_DIRECTION_LTR;
 
@@ -363,7 +377,7 @@ public class WallpaperCropActivity extends Activity implements Handler.Callback 
         boolean isPortrait = displaySize.x < displaySize.y;
 
         Point defaultWallpaperSize = WallpaperUtils.getDefaultWallpaperSize(getResources(),
-                getWindowManager());
+                getWindowManager(), false);
         // Get the crop
         RectF cropRect = mCropView.getCrop();
 

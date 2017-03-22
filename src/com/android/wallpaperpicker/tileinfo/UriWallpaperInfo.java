@@ -63,7 +63,7 @@ public class UriWallpaperInfo extends DrawableThumbWallpaperInfo {
             }
         };
         boolean shouldFadeOutOnFinish = a.getWallpaperParallaxOffset() == 0f;
-        a.cropImageAndSetWallpaper(mUri, h, shouldFadeOutOnFinish);
+        a.cropImageAndSetWallpaper(mUri, h, shouldFadeOutOnFinish, false);
     }
 
     @Override

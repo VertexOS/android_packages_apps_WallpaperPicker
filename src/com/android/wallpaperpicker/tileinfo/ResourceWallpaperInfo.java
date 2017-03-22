@@ -50,7 +50,7 @@ public class ResourceWallpaperInfo extends DrawableThumbWallpaperInfo {
 
     @Override
     public void onSave(WallpaperPickerActivity a) {
-        a.cropImageAndSetWallpaper(mResources, mResId, true /* shouldFadeOutOnFinish */);
+        a.cropImageAndSetWallpaper(mResources, mResId, true /* shouldFadeOutOnFinish */, true /* isPortrait */);
     }
 
     @Override
