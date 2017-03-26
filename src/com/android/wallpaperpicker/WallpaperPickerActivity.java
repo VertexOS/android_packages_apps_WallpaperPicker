@@ -436,11 +436,13 @@ public class WallpaperPickerActivity extends WallpaperCropActivity
             }
         }
 
+/*
         // Add an entry for the default wallpaper (stored in system resources)
         WallpaperTileInfo defaultWallpaperInfo = DefaultWallpaperInfo.get(this);
         if (defaultWallpaperInfo != null) {
             bundled.add(0, defaultWallpaperInfo);
         }
+*/
         return bundled;
     }
 
